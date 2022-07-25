@@ -23,7 +23,7 @@ jobs:
       with:
         path: ./docker_latest_tag.txt
     - name: Echo package.json
-      run: cat "${{ steps.package.outputs.content }}" | head -c7 >> $FRONTEND-TAG
+      run: echo "${{ steps.package.outputs.content }}" | head -c7
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
