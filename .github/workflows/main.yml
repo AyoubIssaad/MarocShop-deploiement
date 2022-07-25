@@ -17,6 +17,13 @@ jobs:
    steps:
     - name: Checkout master
       uses: actions/checkout@main
+    - name: Read docker_latest_tag.txt
+      id: package
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: ./docker_latest_tag.txt
+    - name: Echo package.json
+      run: echo "${{ steps.package.outputs.content::8 }}"
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
