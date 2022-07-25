@@ -1,0 +1,34 @@
+
+name: DEPLOY TO KUBERNETES
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'manifest/**'
+      - 'server.py'
+      - 'Dockerfile'
+      - 'docker_latest_tag.txt'
+      - '.github/workflows/**'
+jobs:
+ build:
+   runs-on: ubuntu-latest
+   steps:
+    - name: Checkout master
+      uses: actions/checkout@main
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    - name: Update deployment file
+      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/<registry-name>/<repository_name>:'${TAG}'|' $GITHUB_WORKSPACE/manifest/kubernetes-manifest.yaml
+
+    - name: Save DigitalOcean kubeconfig with short-lived credentials
+      run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 kariss-marocshop
+
+    - name: Deploy to DigitalOcean Kubernetes
+      run: kubectl apply -f $GITHUB_WORKSPACE/manifest/kubernetes-manifest.yaml
+
+    #- name: Verify deployment
+    #  run: kubectl rollout status deployment/<deployment_name>
