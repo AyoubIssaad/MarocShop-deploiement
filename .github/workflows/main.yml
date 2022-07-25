@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'manifest/**'
+      - 'manifests/**'
       - 'server.py'
       - 'Dockerfile'
       - 'docker_latest_tag.txt'
@@ -29,13 +29,13 @@ jobs:
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
     - name: Update deployment file
-      run: TAG=$(echo $FRONTEND-TAG) && sed -i 's|<IMAGE>|registry.digitalocean.com/kariss-marocshop/frontend:'${TAG}'|' $GITHUB_WORKSPACE/manifest/kubernetes-manifest.yaml
+      run: TAG=$(echo $FRONTEND-TAG) && sed -i 's|<IMAGE>|registry.digitalocean.com/kariss-marocshop/frontend:'${TAG}'|' $GITHUB_WORKSPACE/manifests/kubernetes-manifest.yaml
 
     - name: Save DigitalOcean kubeconfig with short-lived credentials
       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 kariss-marocshop
 
     - name: Deploy to DigitalOcean Kubernetes
-      run: kubectl apply -f $GITHUB_WORKSPACE/manifest/kubernetes-manifest.yaml
+      run: kubectl apply -f $GITHUB_WORKSPACE/manifests/kubernetes-manifest.yaml
 
     # - name: Verify deployment
     #   run: kubectl rollout status deployment/<deployment_name>
