@@ -7,33 +7,34 @@ on:
       - main
     paths:
       - 'manifests/**'
-      - 'server.py'
-      - 'Dockerfile'
       - 'docker_latest_tag.txt'
       - '.github/workflows/**'
 jobs:
- build:
+ deploiement_dans_kubernetes_staging:
    runs-on: ubuntu-latest
    steps:
     - name: Checkout master
       uses: actions/checkout@main
+      # Récupérer le tag de la derniere image
     - name: Read docker_latest_tag.txt
       id: package
       uses: juliangruber/read-file-action@v1
       with:
         path: ./docker_latest_tag.txt
-    - name: Echo package.json
-      run: echo "${{ steps.package.outputs.content }}" | head -c7
+    # Installation de doctl pour controller notre cluster K8s
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    # Modifier le tag dans notre fichier de déploiement avec les dernieres version
     - name: Update deployment file
       run: TAG=$(echo "${{ steps.package.outputs.content }}" | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/kariss-marocshop/frontend:'${TAG}'|' $GITHUB_WORKSPACE/manifests/kubernetes-manifest.yaml
 
+      # Récupérer le fichier de config de notre cluster
     - name: Save DigitalOcean kubeconfig with short-lived credentials
       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 kariss-marocshop
 
+      # publier les nouvelles version dans notre cluster
     - name: Deploy to DigitalOcean Kubernetes
       run: kubectl apply -f $GITHUB_WORKSPACE/manifests/kubernetes-manifest.yaml
 
