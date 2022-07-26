@@ -189,7 +189,7 @@ kind: Deployment
 metadata:
   name: frontend
 spec:
-  replicas: 4
+  replicas: 10
   selector:
     matchLabels:
       app: frontend
